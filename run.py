@@ -146,6 +146,7 @@ async def mark_attendance_endpoint(request: NFCRequest):
         )
 
     print('✅ Counted an attendance')
+    return {"attendance": "counted"}
 
 
 # --------------------------------------------------------------------------------------------------

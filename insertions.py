@@ -47,12 +47,6 @@ VALUES
 ('L001', 3, 'SOC3010', 'U200002', CURRENT_DATE, '09:00:00', '10:30:00'),
 ('L002', 2, 'SOC3020', 'U200005', CURRENT_DATE, '11:00:00', '12:30:00');
 
--- Insert data into attendance
-INSERT INTO attendance (student_id, course_id, lecture_date, status)
-VALUES
-('U2210188', 'SOC3010', CURRENT_DATE, TRUE),
-('U2210177', 'SOC3020', CURRENT_DATE, FALSE);
-
 -- Insert data into auth
 INSERT INTO auth (id, email, auth_password)
 VALUES
