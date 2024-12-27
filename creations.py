@@ -3,16 +3,14 @@ from psycopg2 import sql
 from database import DB_NAME, DB_PORT, DB_HOST, DB_USER, DB_PASSWORD
 
 def create_tables():
-    # Database connection parameters
     db_params = {
-        'dbname': DB_NAME,  # Your database name
-        'user': DB_USER,      # Your username
-        'password': DB_PASSWORD,  # Your password
-        'host': DB_HOST,  # Your host
-        'port': DB_PORT       # Default PostgreSQL port
+        'dbname': DB_NAME,
+        'user': DB_USER,
+        'password': DB_PASSWORD,
+        'host': DB_HOST,
+        'port': DB_PORT
     }
 
-    # SQL statements to create tables in the correct order
     create_table_queries = [
         """CREATE TABLE IF NOT EXISTS course (
             course_id VARCHAR(255) PRIMARY KEY,
@@ -102,16 +100,13 @@ def create_tables():
     ]
 
     try:
-        # Connect to the database
         conn = psycopg2.connect(**db_params)
         cursor = conn.cursor()
 
-        # Execute each create table query
         for query in create_table_queries:
             cursor.execute(query)
             print(f"Executed: {query.splitlines()[0]}")
 
-        # Commit changes
         conn.commit()
         print("All tables created successfully!")
 
@@ -119,7 +114,6 @@ def create_tables():
         print(f"An error occurred: {e}")
 
     finally:
-        # Close the connection
         if cursor:
             cursor.close()
         if conn:
