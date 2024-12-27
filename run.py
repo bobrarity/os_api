@@ -42,6 +42,10 @@ class ProfessorCourseRequest(BaseModel):
     course_id: str
 
 
+class NFCRequest(BaseModel):
+    nfc_tag_id: str
+
+
 @app.post('/login', response_model=LoginResponse)
 async def login(credentials: LoginRequest):
     print(credentials.id, credentials.password)
@@ -129,6 +133,19 @@ async def get_attendance_records():
         )
 
     return {"attendance_records": attendance}
+
+
+@app.post('/mark-attendance')
+async def mark_attendance_endpoint(request: NFCRequest):
+    attendance_result = await mark_attendance(request.nfc_tag_id)
+
+    if not attendance_result:
+        raise HTTPException(
+            status_code=404,
+            detail="Could not mark attendance: NFC tag not found or no active lecture"
+        )
+
+    print('✅ Counted an attendance')
 
 
 # --------------------------------------------------------------------------------------------------

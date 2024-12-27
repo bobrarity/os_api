@@ -266,6 +266,7 @@ async def fetch_students():
         print(f'Error occurred while fetching all students: {e}')
         return None
 
+
 async def fetch_attendance():
     global db_conn
     try:
@@ -285,4 +286,54 @@ async def fetch_attendance():
 
     except Exception as e:
         print(f'Error occurred while fetching attendance records: {e}')
+        return None
+
+
+async def mark_attendance(nfc_tag_id):
+    global db_conn
+    try:
+        if db_conn is None:
+            await init_db_connection()
+
+        # Fetch student_id using nfc_tag_id
+        query_student = '''
+        SELECT student_id FROM student WHERE nfc_tag_id = $1;
+        '''
+        student = await db_conn.fetchrow(query_student, nfc_tag_id)
+
+        if not student:
+            return None  # No matching student
+
+        student_id = student['student_id']
+
+        # Fetch course_id using CURRENT_TIME
+        query_course = '''
+        SELECT t.course_id
+        FROM timetable t
+        WHERE t.start_time <= CURRENT_TIME AND t.end_time >= CURRENT_TIME AND t.date = CURRENT_DATE
+        LIMIT 1;
+        '''
+        course = await db_conn.fetchrow(query_course)
+
+        if not course:
+            return None  # No active lecture
+
+        course_id = course['course_id']
+
+        # Insert into attendance
+        query_insert = '''
+        INSERT INTO attendance (student_id, course_id, lecture_date, status)
+        VALUES ($1, $2, CURRENT_DATE, TRUE);
+        '''
+        await db_conn.execute(query_insert, student_id, course_id)
+
+        return {
+            "student_id": student_id,
+            "course_id": course_id,
+            "lecture_date": "CURRENT_DATE",
+            "status": True
+        }
+
+    except Exception as e:
+        print(f'Error occurred while marking attendance: {e}')
         return None
