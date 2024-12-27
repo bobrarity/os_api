@@ -47,7 +47,10 @@ class NFCRequest(BaseModel):
 
 
 class NFCResponse(BaseModel):
-    attendance: str
+    student_id: int
+    course_id: int
+    lecture_date: str
+    status: bool
 
 
 @app.post('/login', response_model=LoginResponse)
@@ -139,7 +142,8 @@ async def get_attendance_records():
     return {"attendance_records": attendance}
 
 
-@app.post('/mark-attendance')
+
+@app.post('/mark-attendance', response_model=NFCResponse)
 async def mark_attendance_endpoint(request: NFCRequest):
     attendance_result = await mark_attendance(request.nfc_tag_id)
 
@@ -150,7 +154,7 @@ async def mark_attendance_endpoint(request: NFCRequest):
         )
 
     print('✅ Counted an attendance')
-    return {"attendance": "counted"}
+    return attendance_result
 
 
 # --------------------------------------------------------------------------------------------------
