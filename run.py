@@ -37,6 +37,11 @@ class PersonRequest(BaseModel):
     id: str
 
 
+class ProfessorCourseRequest(BaseModel):
+    professor_id: str
+    course_id: str
+
+
 @app.post('/login', response_model=LoginResponse)
 async def login(credentials: LoginRequest):
     print(credentials.id, credentials.password)
@@ -85,6 +90,45 @@ async def get_person_details(person_request: PersonRequest):
         )
 
     return person_data
+
+
+@app.post('/students-in-course')
+async def get_students_in_course(request: ProfessorCourseRequest):
+    students = await fetch_students_in_course(request.professor_id, request.course_id)
+
+    if not students:
+        raise HTTPException(
+            status_code=404,
+            detail="No students found for the given professor and course"
+        )
+
+    return {"students": students}
+
+
+@app.get('/all-students')
+async def get_all_students():
+    students = await fetch_students()
+
+    if not students:
+        raise HTTPException(
+            status_code=404,
+            detail="No students found"
+        )
+
+    return {"students": students}
+
+
+@app.get('/attendance-records')
+async def get_attendance_records():
+    attendance = await fetch_attendance()
+
+    if not attendance:
+        raise HTTPException(
+            status_code=404,
+            detail="No attendance records found"
+        )
+
+    return {"attendance_records": attendance}
 
 
 # --------------------------------------------------------------------------------------------------

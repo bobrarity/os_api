@@ -1,10 +1,15 @@
-import asyncpg
+import os
 
-DB_NAME = 'os_dmdc'
-DB_HOST = 'dpg-ctmsq69opnds73fidet0-a.oregon-postgres.render.com'
-DB_PORT = '5432'
-DB_USER = 'admin'
-DB_PASSWORD = 'mBwDpERHwVgoA81scRY34prcBXpeN2Sr'
+import asyncpg
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
 
 db_conn = None
 
@@ -212,4 +217,72 @@ async def fetch_person_data(person_id):
 
     except Exception as e:
         print(f'Error occurred while fetching person data for id {person_id}:', e)
+        return None
+
+
+async def fetch_students_in_course(professor_id, course_id):
+    global db_conn
+    try:
+        if db_conn is None:
+            await init_db_connection()
+
+        query = '''
+        SELECT s.student_id, s.name, s.email, s.phone_number, s.branch_lvl, s.department_name, s.section_id
+        FROM student s
+        INNER JOIN section sec ON s.section_id = sec.section_id
+        INNER JOIN timetable t ON sec.section_id = t.section_id
+        WHERE t.professor_id = $1 AND t.course_id = $2;
+        '''
+        students = await db_conn.fetch(query, professor_id, course_id)
+
+        if not students:
+            return None
+
+        return [dict(student) for student in students]
+
+    except Exception as e:
+        print(f'Error occurred while fetching students for professor_id {professor_id} and course_id {course_id}:', e)
+        return None
+
+
+async def fetch_students():
+    global db_conn
+    try:
+        if db_conn is None:
+            await init_db_connection()
+
+        query = '''
+        SELECT student_id, name, email, phone_number, branch_lvl, department_name, section_id
+        FROM student;
+        '''
+        students = await db_conn.fetch(query)
+
+        if not students:
+            return None
+
+        return [dict(student) for student in students]
+
+    except Exception as e:
+        print(f'Error occurred while fetching all students: {e}')
+        return None
+
+async def fetch_attendance():
+    global db_conn
+    try:
+        if db_conn is None:
+            await init_db_connection()
+
+        query = '''
+        SELECT student_id, course_id, lecture_date, status
+        FROM attendance;
+        '''
+        attendance_records = await db_conn.fetch(query)
+
+        if not attendance_records:
+            return None
+
+        return [dict(record) for record in attendance_records]
+
+    except Exception as e:
+        print(f'Error occurred while fetching attendance records: {e}')
         return None

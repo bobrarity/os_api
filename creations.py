@@ -1,14 +1,15 @@
 import psycopg2
 from psycopg2 import sql
+from database import DB_NAME, DB_PORT, DB_HOST, DB_USER, DB_PASSWORD
 
 def create_tables():
     # Database connection parameters
     db_params = {
-        'dbname': 'os_dmdc',  # Your database name
-        'user': 'admin',      # Your username
-        'password': 'mBwDpERHwVgoA81scRY34prcBXpeN2Sr',  # Your password
-        'host': 'dpg-ctmsq69opnds73fidet0-a.oregon-postgres.render.com',  # Your host
-        'port': 5432          # Default PostgreSQL port
+        'dbname': DB_NAME,  # Your database name
+        'user': DB_USER,      # Your username
+        'password': DB_PASSWORD,  # Your password
+        'host': DB_HOST,  # Your host
+        'port': DB_PORT       # Default PostgreSQL port
     }
 
     # SQL statements to create tables in the correct order
