@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,8 +56,8 @@ class NFCRequest(BaseModel):
 
 
 class NFCResponse(BaseModel):
-    student_id: int
-    course_id: int
+    student_id: str
+    course_id: str   
     lecture_date: str
     status: bool
 
