@@ -4,16 +4,7 @@ from fastapi.responses import JSONResponse
 
 from database import *
 
-# uvicorn run:app --reload
 app = FastAPI()
-
-users_db = {
-    # student_id below
-    "admin": {"password": "123"}
-}
-
-valid_device_tokens = ["device1", "device2"]
-valid_nfc_tags = ["tag1", "tag2"]
 
 connected_clients = []
 
@@ -25,42 +16,78 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     role: str
+    data: dict = {}
     error: dict = {}
 
 
-class SuccessResponse(BaseModel):
-    data: dict
-    error: dict = {}
+class CourseRequest(BaseModel):
+    course_id: str
 
 
-class ErrorResponse(BaseModel):
-    error: dict
+class CourseResponse(BaseModel):
+    course_id: str
+    course_type: str
+    name: str
+    department_name: str
+    credit: int
+    sections: list
 
 
-class NFCRequest(BaseModel):
-    device_token: str
-    nfc_tag: str
-
-
-class NFCResponse(BaseModel):
-    accepted: bool
-    error: dict
+class PersonRequest(BaseModel):
+    id: str
 
 
 @app.post('/login', response_model=LoginResponse)
 async def login(credentials: LoginRequest):
     print(credentials.id, credentials.password)
-    role = await check_user_credentials(credentials.id, credentials.password)
+    role_data = await check_user_credentials(credentials.id, credentials.password)
 
-    if not role:
+    if not role_data:
         raise HTTPException(
             status_code=401,
             detail="Invalid ID or password"
         )
 
-    return {"role": role, "error": {}}
+    if isinstance(role_data, dict) and 'role' in role_data:
+        return {
+            "role": role_data['role'],
+            "data": {k: v for k, v in role_data.items() if k != 'role'},
+            "error": {}
+        }
+
+    raise HTTPException(
+        status_code=500,
+        detail="Unexpected error occurred"
+    )
 
 
+@app.post('/course')
+async def get_course_details(course_request: CourseRequest):
+    course_data = await fetch_course_data(course_request.course_id)
+
+    if not course_data:
+        raise HTTPException(
+            status_code=404,
+            detail="Course not found"
+        )
+
+    return course_data
+
+
+@app.post('/person')
+async def get_person_details(person_request: PersonRequest):
+    person_data = await fetch_person_data(person_request.id)
+
+    if not person_data:
+        raise HTTPException(
+            status_code=404,
+            detail="Person not found"
+        )
+
+    return person_data
+
+
+# --------------------------------------------------------------------------------------------------
 @app.websocket("/ws/notifications")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
