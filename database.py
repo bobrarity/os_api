@@ -108,7 +108,7 @@ FROM professor p
 INNER JOIN timetable t ON p.professor_id = t.professor_id
 INNER JOIN course c ON t.course_id = c.course_id
 WHERE p.professor_id = $1
-  AND t.date = CURRENT_DATE AT TIME ZONE 'UTC' + INTERVAL '5 hours'
+  AND t.date = CURRENT_DATE
   AND t.start_time <= CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours'
   AND t.end_time >= CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours';
 
@@ -309,14 +309,14 @@ async def mark_attendance(nfc_tag_id):
             return None  # No matching student
 
         student_id = student['student_id']
-
+        print(student_id)
         # Fetch course_id using CURRENT_TIME
         query_course = '''
 SELECT t.course_id
 FROM timetable t
 WHERE t.start_time <= (CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours')
   AND t.end_time >= (CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours')
-  AND t.date = (CURRENT_DATE AT TIME ZONE 'UTC' + INTERVAL '5 hours')
+  AND t.date = CURRENT_DATE
 LIMIT 1;
 
         '''
