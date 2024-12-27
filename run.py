@@ -46,6 +46,10 @@ class NFCRequest(BaseModel):
     nfc_tag_id: str
 
 
+class NFCResponse(BaseModel):
+    attendance: str
+
+
 @app.post('/login', response_model=LoginResponse)
 async def login(credentials: LoginRequest):
     print(credentials.id, credentials.password)
