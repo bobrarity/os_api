@@ -104,10 +104,14 @@ async def check_user_credentials(user_id, password):
             # Get current lecture information for the professor
             query = '''
             SELECT t.lecture_num, t.section_id, t.course_id, t.date, t.start_time, t.end_time, c.name AS course_name
-            FROM professor p
-            INNER JOIN timetable t ON p.professor_id = t.professor_id
-            INNER JOIN course c ON t.course_id = c.course_id
-            WHERE p.professor_id = $1 AND t.date = CURRENT_DATE AND t.start_time <= CURRENT_TIME AND t.end_time >= CURRENT_TIME;
+FROM professor p
+INNER JOIN timetable t ON p.professor_id = t.professor_id
+INNER JOIN course c ON t.course_id = c.course_id
+WHERE p.professor_id = $1
+  AND t.date = CURRENT_DATE AT TIME ZONE 'UTC' + INTERVAL '5 hours'
+  AND t.start_time <= CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours'
+  AND t.end_time >= CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours';
+
             '''
             current_lecture = await db_conn.fetchrow(query, user_id)
 
@@ -308,10 +312,13 @@ async def mark_attendance(nfc_tag_id):
 
         # Fetch course_id using CURRENT_TIME
         query_course = '''
-        SELECT t.course_id
-        FROM timetable t
-        WHERE t.start_time <= CURRENT_TIME AND t.end_time >= CURRENT_TIME AND t.date = CURRENT_DATE
-        LIMIT 1;
+SELECT t.course_id
+FROM timetable t
+WHERE t.start_time <= (CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours')
+  AND t.end_time >= (CURRENT_TIME AT TIME ZONE 'UTC' + INTERVAL '5 hours')
+  AND t.date = (CURRENT_DATE AT TIME ZONE 'UTC' + INTERVAL '5 hours')
+LIMIT 1;
+
         '''
         course = await db_conn.fetchrow(query_course)
 
